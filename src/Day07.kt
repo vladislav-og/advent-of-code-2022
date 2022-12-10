@@ -30,7 +30,7 @@ fun main() {
         dirFileSizes = hashMapOf()
         var currentActiveCommand = ""
         val directoryQueue = ArrayDeque<String>()
-        var currentActiveSubDirectory = ""
+        var currentActiveSubDirectory: String
         for (row in input) {
             val curDirectoryIdentifier = directoryQueue.joinToString("")
             if (row.startsWith("$")) {
@@ -84,7 +84,7 @@ fun main() {
         val spaceNeededToFreeUp = 70000000 - dirSizes["/"]!!
         val spaceToFreeUp = 30000000 - spaceNeededToFreeUp
 
-        return dirSizes.values.sorted().filter { it >= spaceToFreeUp }.first()
+        return dirSizes.values.sorted().first { it >= spaceToFreeUp }
     }
 
     // test if implementation meets criteria from the description, like:

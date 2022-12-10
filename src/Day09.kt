@@ -66,7 +66,55 @@ fun main() {
   }
 
   fun part2(input: List<String>): Int {
-    return 0
+    val tailSteps = hashSetOf(Pair(0, 0))
+    var tailPosition = Pair(0, 0) // (x, y)
+    var headPosition = Pair(0, 0) // (x, y)
+    for (row in input) {
+      val (direction, step) = row.split(" ")
+      when(direction) {
+        "R" -> {
+          for ( i in 1..step.toInt()) {
+            val newXposition = headPosition.first + 1
+            headPosition = Pair(newXposition, headPosition.second)
+            if (!isTailTouchingHead(headPosition, tailPosition)) {
+              tailPosition = Pair(newXposition - 1, headPosition.second)
+              tailSteps.add(tailPosition)
+            }
+          }
+        }
+        "L" -> {
+          for ( i in 1..step.toInt()) {
+            val newXposition = headPosition.first - 1
+            headPosition = Pair(newXposition, headPosition.second)
+            if (!isTailTouchingHead(headPosition, tailPosition)) {
+              tailPosition = Pair(newXposition + 1, headPosition.second)
+              tailSteps.add(tailPosition)
+            }
+          }
+        }
+        "U" -> {
+          for ( i in 1..step.toInt()) {
+            val newYposition = headPosition.second + 1
+            headPosition = Pair(headPosition.first, newYposition)
+            if (!isTailTouchingHead(headPosition, tailPosition)) {
+              tailPosition = Pair(headPosition.first, headPosition.second - 1)
+              tailSteps.add(tailPosition)
+            }
+          }
+        }
+        "D" -> {
+          for ( i in 1..step.toInt()) {
+            val newYposition = headPosition.second - 1
+            headPosition = Pair(headPosition.first, newYposition)
+            if (!isTailTouchingHead(headPosition, tailPosition)) {
+              tailPosition = Pair(headPosition.first, headPosition.second + 1)
+              tailSteps.add(tailPosition)
+            }
+          }
+        }
+      }
+    }
+    return tailSteps.size
   }
 
   // test if implementation meets criteria from the description, like:
