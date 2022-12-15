@@ -5,10 +5,11 @@ fun main() {
     return regex.findAll(input).map { c -> c.value }.toMutableList()
   }
 
-  fun part1(input: List<String>): Int {
-    var curMonkey = -1
-    val monkeys = hashMapOf<Int, HashMap<String, MutableList<String>>>()
+  fun extractMonkeysInitialData(input: List<String>): Pair<HashMap<Int, HashMap<String, MutableList<String>>>, MutableList<Int>> {
     val monkeysItemCount = mutableListOf<Int>()
+    val monkeys = hashMapOf<Int, HashMap<String, MutableList<String>>>()
+    var curMonkey = -1
+
     for (row in input) {
       if (row.isBlank()) {
         continue
@@ -34,27 +35,35 @@ fun main() {
         }
       }
     }
+    return Pair(monkeys, monkeysItemCount)
+  }
 
-    for (i in 1..20) {
-      for (j in 0..curMonkey) {
+  fun getWorryLevel(operation: MutableList<String>, item: String, divider: Int): Long {
+    val worryLevel = when (operation[0]) {
+      "*" -> {
+        if (operation[1] == "old") {
+          item.toLong() * item.toLong()
+        } else {
+          item.toLong() * operation[1].toLong()
+        }
+      }
+      "+" -> {
+        item.toLong() + operation[1].toLong()
+      }
+      else -> 0L
+    }
+    return if (divider == 3) worryLevel / 3 else worryLevel % divider
+  }
+
+  fun runGame(monkeys: HashMap<Int, HashMap<String, MutableList<String>>>, monkeysItemCount: MutableList<Int>, commonModulus: Int, rounds: Int) {
+    for (i in 1..rounds) {
+      for (j in 0 until monkeys.size) {
         for (item in monkeys[j]!!["items"]!!) {
           monkeysItemCount[j] = monkeysItemCount[j] + 1
           val operation = monkeys[j]!!["operation"]!!
-          val worryLevel = when (operation[0]) {
-            "*" -> {
-              if (operation[1] == "old") {
-                (item.toInt() * item.toInt()) / 3
-              } else {
-                (item.toInt() * operation[1].toInt()) / 3
-              }
-            }
+          val worryLevel = getWorryLevel(operation, item, commonModulus)
 
-            "+" -> (item.toInt() + operation[1].toInt()) / 3
-            "-" -> (item.toInt() - operation[1].toInt()) / 3
-            else -> 0
-          }
-
-          if (worryLevel % monkeys[j]!!["divisible"]!![0].toInt() == 0) {
+          if (worryLevel % monkeys[j]!!["divisible"]!![0].toInt() == 0L) {
             val monkeyToPassItem = monkeys[j]!!["true"]!![0]
             monkeys[monkeyToPassItem.toInt()]!!["items"]!!.add(worryLevel.toString())
           } else {
@@ -65,23 +74,37 @@ fun main() {
         monkeys[j]!!["items"] = mutableListOf()
       }
     }
-    monkeysItemCount.sort()
-    return monkeysItemCount[monkeysItemCount.size - 1] * monkeysItemCount[monkeysItemCount.size - 2]
   }
 
-  fun part2(input: List<String>): Int {
-    return 1
+  fun part1(input: List<String>): Long {
+    val (monkeys, monkeysItemCount) = extractMonkeysInitialData(input)
+
+    runGame(monkeys, monkeysItemCount, 3, 20)
+
+    monkeysItemCount.sort()
+    return monkeysItemCount[monkeysItemCount.size - 1].toLong() * monkeysItemCount[monkeysItemCount.size - 2].toLong()
+  }
+
+  fun part2(input: List<String>): Long {
+    val (monkeys, monkeysItemCount) = extractMonkeysInitialData(input)
+    val commonModulus = monkeys.values.map { it["divisible"]!![0].toInt() }
+      .reduce { acc, it -> if (acc % it == 0) acc else acc * it }
+
+    runGame(monkeys, monkeysItemCount, commonModulus, 10000)
+
+    monkeysItemCount.sort()
+    return monkeysItemCount[monkeysItemCount.size - 1].toLong() * monkeysItemCount[monkeysItemCount.size - 2].toLong()
   }
 
   // test if implementation meets criteria from the description, like:
   val testInput = readInput("Day11_test")
-  println(part1(testInput))
-  check(part1(testInput) == 10605)
-//    println(part2(testInput1))
-//    check(part2(testInput1) == 2713310158)
+//  println(part1(testInput))
+  check(part1(testInput) == 10605L)
+//    println(part2(testInput))
+    check(part2(testInput) == 2713310158)
 
   val input = readInput("Day11")
-  println(part1(input))
+//  println(part1(input))
 //    println(part2(input))
 }
 
